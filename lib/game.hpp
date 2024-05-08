@@ -22,28 +22,37 @@ private:
     sf::SoundBuffer sound_bufferPong;
     sf::Sound sound_lose;
     sf::Sound sound_pong;
+    sf::Text score;
+    sf::Text points;
+    sf::Text end;
+    sf::Font font;
     std::vector<sf::RectangleShape> *objects;
     float ball_speedY;
     float ball_speedX;
     int player_dir;
+    int points_int;
     float player_acceleration;
     bool game_running;
     void render();
     void render_player();
     void render_objects();
     void render_ball();
+    void render_text();
+    void render_end();
     void update();
     void update_player();
     void update_events();
+    void update_score();
     void update_ball();
-    void gravity();
     void init_vars();
     void init_player();
     void init_window();
+    void init_text();
     void init_objects();
     void init_ball();
     void init_sounds();
     sf::Vector2f get_player_pos();
+    sf::Text create_text(sf::Vector2f Position, std::string String, sf::Color Color, int size);
 public:
     void run();
 

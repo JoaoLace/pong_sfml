@@ -1,4 +1,15 @@
 #include "../lib/game.hpp"
+void Game::init_text()
+{
+    if (!font.loadFromFile("./assets/JetBrainsMono-Bold-Italic.ttf"))
+    {
+        std::cout << "ERROR: Could not load font from ../assets/JetBrainsMono-Bold-Italic.ttf";
+    }
+
+    score = create_text(sf::Vector2f(650, 550), "Score: ", sf::Color::White, 24);
+    points = create_text(sf::Vector2f(750, 550), std::to_string(points_int), sf::Color::White, 24);
+    end = create_text(sf::Vector2f(300, window_height / 2), "GAME OVER", sf::Color::Red, 32);
+}
 void Game::init_sounds()
 {
     if (!sound_bufferLose.loadFromFile("./assets/lose.wav"))
@@ -49,6 +60,14 @@ void Game::init_vars()
     ball_speedX = 0;
     player_acceleration = 1;
     player_dir = 0;
+    points_int = 0;
+}
+void Game::update()
+{
+    update_events();
+    update_ball();
+    update_player();
+    update_score();
 }
 void Game::update_events()
 {
@@ -62,11 +81,9 @@ void Game::update_events()
         }
     }
 }
-void Game::update()
+void Game::update_score()
 {
-    update_events();
-    update_ball();
-    update_player();
+    points.setString(std::to_string(points_int));
 }
 void Game::update_ball()
 {
@@ -75,8 +92,8 @@ void Game::update_ball()
     {
         ball_speedY = ball_speedY * -1;
         ball_speedX *= player_dir;
-        ball_speedX+=2;
-        ball_speedY+=2;
+        ball_speedX += 2;
+        ball_speedY += 2;
         sound_pong.play();
     }
     unsigned counter = 0;
@@ -86,21 +103,22 @@ void Game::update_ball()
         {
             sound_pong.play();
             ball_speedY = ball_speedY * -1;
-            ball_speedX+=2;
-            ball_speedY+=2;
+            ball_speedX += 2;
+            ball_speedY += 2;
             objects->erase(objects->begin() + counter);
+            points_int += 5;
         }
         ++counter;
     }
     if (ball->getPosition().x >= window_width - 3)
     {
-        ball_speedX+=2;
+        ball_speedX += 2;
         ball_speedX *= -1;
         sound_pong.play();
     }
     if (ball->getPosition().x <= 0)
     {
-        ball_speedX+=2;
+        ball_speedX += 2;
         ball_speedX *= -1;
         sound_pong.play();
     }
@@ -112,7 +130,7 @@ void Game::update_ball()
     if (ball->getPosition().y <= 0)
     {
         ball_speedY *= -1;
-        ball_speedY+=2;
+        ball_speedY += 2;
         sound_pong.play();
     }
 }
@@ -146,7 +164,13 @@ void Game::render()
     render_player();
     render_objects();
     render_ball();
+    render_text();
     window->display();
+}
+void Game::render_text()
+{
+    window->draw(score);
+    window->draw(points);
 }
 void Game::render_ball()
 {
@@ -163,12 +187,25 @@ void Game::render_objects()
         window->draw(x);
     }
 }
+void Game::render_end()
+{
+    window->draw(end);
+    window->display();
+}
 void Game::run()
 {
     while (game_running)
     {
         update();
         render();
+    }
+    if (!game_running)
+    {
+        while (true)
+        {
+            update_events();
+            render_end();
+        }
     }
 }
 sf::Vector2f Game::get_player_pos()
@@ -179,6 +216,7 @@ Game::Game()
 {
     init_vars();
     init_window();
+    init_text();
     init_player();
     init_ball();
     init_sounds();
@@ -191,4 +229,14 @@ Game::~Game()
     delete player;
     delete objects;
     delete ball;
+}
+sf::Text Game::create_text(sf::Vector2f Position, std::string String, sf::Color Color, int size)
+{
+    sf::Text temp;
+    temp.setFont(font);
+    temp.setPosition(Position);
+    temp.setString(String);
+    temp.setFillColor(Color);
+    temp.setCharacterSize(size);
+    return temp;
 }
